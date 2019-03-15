@@ -14,4 +14,4 @@ O que o sistema faz?.
 ![](https://github.com/slayrj/arduino-relay-server/blob/master/sketch.png)
 
 
-- Usei o Pino A0 pois minha placa é de 8 rele se usasse em linha reta como Flat iria atingir o pino de interrupção usado pelo Receptor de RF.
+- Usei o Pino A0 pois minha placa é de 8 rele se usasse em linha reta com o Flat iria atingir o pino de interrupção usado pelo Receptor de RF.
