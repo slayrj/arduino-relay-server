@@ -1,17 +1,32 @@
+/* Arduino Servidor de Relays
+ * - O objetivo desse Arduino é acionar relays através de comandos via MQTT, transmitir RF433 para Modulos de Rele remotos atraver de MQTT, receber RF433 para notificação do MQTT
+ * Transmitir IR para dispositivos atraves do recebimento infomação por MQTT
+ * 
+ * Pinagem
+ * D2 Receptor RF433 
+ * A0 Transmissor RF433
+ * D3 Emissor de IR
+ * 
+ */
+
 #include <SPI.h>
 #include <Ethernet.h>
 #include <PubSubClient.h>
 #include <RCSwitch.h>
+#include <IRremote.h>
 
-// Associacao de Relays e pinos
-#define relay01 A0
-#define relay02 3
-#define relay03 4
-#define relay04 5
-#define relay05 6
-#define relay06 7
-#define relay07 8
-#define relay08 9
+// IR things
+IRsend irsend;
+
+// Relays e pinos
+#define relay01 22
+#define relay02 24
+#define relay03 26
+#define relay04 28
+#define relay05 30
+#define relay06 32
+#define relay07 34
+#define relay08 36
 
 // RF433 pinos
 #define rf_transmitter A5
@@ -19,7 +34,7 @@
 // MQTT Server
 const char* BROKER_MQTT = "192.168.1.250";    // IP do MQTT Server
 int BROKER_PORT = 1883;                       // Porta MQTT server
-#define ID_MQTT "uno01"                       // ID do MQTT
+#define ID_MQTT "mega01"                      // ID do MQTT
 #define TOPIC_RELAY_MQTT "arduino1/pincmd"    // Topico para Relays
 #define TOPIC_ALARM_MQTT "arduino1/alarm"     // Topico para Alarmes
 #define USER_MQTT "usuario"                   // Usuario do MQTT
@@ -84,7 +99,7 @@ void loop()
   mantemConexoes();
   MQTT.loop();
 
-/* RF Receiver things */
+// RF Receiver things
   if (mySwitch.available()) {
     
     int value = mySwitch.getReceivedValue();
@@ -121,7 +136,7 @@ void conectaMQTT() {
         else {
             Serial.println("Nao foi possivel se conectar ao broker.");
             Serial.println("Nova tentatica de conexao em 10s");
-            delay(10000);
+            delay(5000);
         }
     }
 }
@@ -225,5 +240,9 @@ void recebePayload(char* topic, byte* payload, unsigned int length)
     if (msg == "rf3-1") {
        mySwitch.switchOn("11113", "00010");
     }
-
+  
+// Acionadores IR
+    if (msg == "ir-01") {
+       irsend.sendSAMSUNG(0xE0E0F00F, 32);
+    }
 }
