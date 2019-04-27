@@ -13,20 +13,16 @@
 #include <Ethernet.h>
 #include <PubSubClient.h>
 #include <RCSwitch.h>
-#include <IRremote.h>
-
-// IR things
-IRsend irsend;
 
 // Relays e pinos
-#define relay01 22
-#define relay02 24
-#define relay03 26
-#define relay04 28
-#define relay05 30
-#define relay06 32
-#define relay07 34
-#define relay08 36
+#define relay01 A0
+#define relay02 3
+#define relay03 4
+#define relay04 5
+#define relay05 6
+#define relay06 7
+#define relay07 8
+#define relay08 9
 
 // RF433 pinos
 #define rf_transmitter A5
@@ -34,11 +30,11 @@ IRsend irsend;
 // MQTT Server
 const char* BROKER_MQTT = "192.168.1.250";    // IP do MQTT Server
 int BROKER_PORT = 1883;                       // Porta MQTT server
-#define ID_MQTT "mega01"                      // ID do MQTT
+#define ID_MQTT "uno01"                       // ID do MQTT
 #define TOPIC_RELAY_MQTT "arduino1/pincmd"    // Topico para Relays
 #define TOPIC_ALARM_MQTT "arduino1/alarm"     // Topico para Alarmes
-#define USER_MQTT "usuario"                   // Usuario do MQTT
-#define PWD_MQTT "123456"                     // Senha MQTT
+#define USER_MQTT "bruno"                     // Usuario do MQTT
+#define PWD_MQTT "dnakfg"                     // Senha MQTT
 
 // RF433 things
 RCSwitch mySwitch = RCSwitch();
@@ -84,7 +80,10 @@ void setup()
   mySwitch.enableReceive(0);  // Receiver on interrupt 0 => that is pin #2
     
   Ethernet.begin(mac, ip, gateway, subnet);
-
+  // Note - the default maximum packet size is 128 bytes. If the
+  // combined length of clientId, username and password exceed this,
+  // you will need to increase the value of MQTT_MAX_PACKET_SIZE in
+  // PubSubClient.h
   delay(1000); // Delay para garantir a conexão Ethernet.
     
   MQTT.setServer(BROKER_MQTT, BROKER_PORT);
@@ -99,7 +98,7 @@ void loop()
   mantemConexoes();
   MQTT.loop();
 
-// RF Receiver things
+/* RF Receiver things */
   if (mySwitch.available()) {
     
     int value = mySwitch.getReceivedValue();
@@ -122,7 +121,7 @@ void mantemConexoes() {
     if (!MQTT.connected()) {
        conectaMQTT(); 
     }
-   // Serial.println("MQTT Conectado.");
+   // Serial.println("MQTT Conectado."); // Descomente para testar Conexao MQTT
 }
 
 void conectaMQTT() { 
@@ -136,7 +135,7 @@ void conectaMQTT() {
         else {
             Serial.println("Nao foi possivel se conectar ao broker.");
             Serial.println("Nova tentatica de conexao em 10s");
-            delay(5000);
+            delay(10000);
         }
     }
 }
@@ -240,9 +239,5 @@ void recebePayload(char* topic, byte* payload, unsigned int length)
     if (msg == "rf3-1") {
        mySwitch.switchOn("11113", "00010");
     }
-  
-// Acionadores IR
-    if (msg == "ir-01") {
-       irsend.sendSAMSUNG(0xE0E0F00F, 32);
-    }
+
 }
