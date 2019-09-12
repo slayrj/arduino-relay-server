@@ -1,13 +1,4 @@
-/* Arduino Servidor de Relays
- * - O objetivo desse Arduino é acionar relays através de comandos via MQTT, transmitir RF433 para Modulos de Rele remotos atraver de MQTT, receber RF433 para notificação do MQTT
- * Transmitir IR para dispositivos atraves do recebimento infomação por MQTT
- * 
- * Pinagem
- * D2 Receptor RF433 
- * A0 Transmissor RF433
- * D3 Emissor de IR
- * 
- */
+#include <Arduino.h>
 
 #include <SPI.h>
 #include <Ethernet.h>
@@ -31,10 +22,13 @@
 const char* BROKER_MQTT = "192.168.1.250";    // IP do MQTT Server
 int BROKER_PORT = 1883;                       // Porta MQTT server
 #define ID_MQTT "uno01"                       // ID do MQTT
-#define TOPIC_RELAY_MQTT "arduino1/pincmd"    // Topico para Relays
-#define TOPIC_ALARM_MQTT "arduino1/alarm"     // Topico para Alarmes
+#define TOPIC_RELAY_MQTT "relays/pincmd"      // Topico para Relays
+#define TOPIC_ALARM_MQTT "alarm/portas/sala"  // Topico para Alarmes
 #define USER_MQTT "bruno"                     // Usuario do MQTT
 #define PWD_MQTT "dnakfg"                     // Senha MQTT
+
+// Variavel de tempo para o Atualizador de status de MQTT
+unsigned long startTime;
 
 // RF433 things
 RCSwitch mySwitch = RCSwitch();
@@ -47,6 +41,7 @@ IPAddress subnet(255, 255, 255, 0);
 
 // Declaracao de funcoes
 void mantemConexoes();
+void atualizaMQTT();
 void conectaMQTT();
 void recebePayload(char* topic, byte* payload, unsigned int length);
 
@@ -93,6 +88,8 @@ void setup()
   Serial.println(Ethernet.localIP());
 }
 
+//int tellstate = 0;
+
 void loop()
 {  
   mantemConexoes();
@@ -115,13 +112,63 @@ void loop()
     mySwitch.resetAvailable();
   }
 
+   if ( (millis() - startTime) > 30000 ) {
+      atualizaMQTT();
+      startTime = millis();
+   }
+   
 }
 
 void mantemConexoes() {
     if (!MQTT.connected()) {
        conectaMQTT(); 
     }
-   // Serial.println("MQTT Conectado."); // Descomente para testar Conexao MQTT
+   // Serial.println("MQTT Conectado."); // Descomente para testar Conexao MQTT  
+}
+
+void atualizaMQTT() {
+
+   
+    if ( digitalRead(relay01) ) {
+       MQTT.publish("relays/stats/relay01","off");
+    } else {
+       MQTT.publish("relays/stats/relay01","on");
+    }
+    if ( digitalRead(relay02) ) {
+       MQTT.publish("relays/stats/relay02","off");
+    } else {
+       MQTT.publish("relays/stats/relay02","on");
+    }
+    if ( digitalRead(relay03) ) {
+       MQTT.publish("relays/stats/relay03","off");
+    } else {
+       MQTT.publish("relays/stats/relay03","on");
+    }
+    if ( digitalRead(relay04) ) {
+       MQTT.publish("relays/stats/relay04","off");
+    } else {
+       MQTT.publish("relays/stats/relay04","on");
+    }
+    if ( digitalRead(relay05) ) {
+       MQTT.publish("relays/stats/relay05","off");
+    } else {
+       MQTT.publish("relays/stats/relay05","on");
+    }
+    if ( digitalRead(relay06) ) {
+       MQTT.publish("relays/stats/relay06","off");
+    } else {
+       MQTT.publish("relays/stats/relay06","on");
+    }
+    if ( digitalRead(relay07) ) {
+       MQTT.publish("relays/stats/relay07","off");
+    } else {
+       MQTT.publish("relays/stats/relay07","on");
+    }
+    if ( digitalRead(relay08) ) {
+       MQTT.publish("relays/stats/relay08","off");
+    } else {
+       MQTT.publish("relays/stats/relay08","on");
+    }
 }
 
 void conectaMQTT() { 
@@ -151,93 +198,110 @@ void recebePayload(char* topic, byte* payload, unsigned int length)
        msg += c;
        Serial.println( msg );        // Exibe a entrada do MQTT Subscribe
     }
-
+    
     if (msg == "rl1-0") {
+       MQTT.publish("relays/stats/relay01","off");
        digitalWrite(relay01, HIGH);
     }
 
     if (msg == "rl1-1") {
+       MQTT.publish("relays/stats/relay01","on");
        digitalWrite(relay01, LOW);
     }
     
     if (msg == "rl2-0") {
+       MQTT.publish("relays/stats/relay02","off");
        digitalWrite(relay02, HIGH);
     }
 
     if (msg == "rl2-1") {
+       MQTT.publish("relays/stats/relay02","on");
        digitalWrite(relay02, LOW);
     }
     
     if (msg == "rl3-0") {
+       MQTT.publish("relays/stats/relay03","off");
        digitalWrite(relay03, HIGH);
     }
 
     if (msg == "rl3-1") {
+       MQTT.publish("relays/stats/relay03","on");
        digitalWrite(relay03, LOW);
     }
 
     if (msg == "rl4-0") {
+       MQTT.publish("relays/stats/relay04","off");
        digitalWrite(relay04, HIGH);
     }
 
     if (msg == "rl4-1") {
+       MQTT.publish("relays/stats/relay04","on");
        digitalWrite(relay04, LOW);
     }
 
     if (msg == "rl5-0") {
+       MQTT.publish("relays/stats/relay05","off");
        digitalWrite(relay05, HIGH);
     }
 
     if (msg == "rl5-1") {
+       MQTT.publish("relays/stats/relay05","on");
        digitalWrite(relay05, LOW);
     }
 
     if (msg == "rl6-0") {
+       MQTT.publish("relays/stats/relay06","off");
        digitalWrite(relay06, HIGH);
     }
 
     if (msg == "rl6-1") {
+       MQTT.publish("relays/stats/relay06","on");
        digitalWrite(relay06, LOW);
     }
 
     if (msg == "rl7-0") {
+       MQTT.publish("relays/stats/relay07","off");
        digitalWrite(relay07, HIGH);
     }
 
     if (msg == "rl7-1") {
+       MQTT.publish("relays/stats/relay07","on");
        digitalWrite(relay07, LOW);
     }
 
     if (msg == "rl8-0") {
+       MQTT.publish("relays/stats/relay08","off");
        digitalWrite(relay08, HIGH);
     }
 
     if (msg == "rl8-1") {
+       MQTT.publish("relays/stats/relay08","on");
        digitalWrite(relay08, LOW);
     }
+
 // Acionadores por RF433
     if (msg == "rf1-0") {
-       mySwitch.switchOn("11111", "00010");
+       mySwitch.switchOn(11111, 00010);
     }
     
     if (msg == "rf1-1") {
-       mySwitch.switchOn("11111", "00011");
+       mySwitch.switchOn(11111, 00011);
     }
 
     if (msg == "rf2-0") {
-       mySwitch.switchOn("11112", "00010");
+       mySwitch.switchOn(11112, 00010);
     }
 
     if (msg == "rf2-1") {
-       mySwitch.switchOn("11112", "00010");
+       mySwitch.switchOn(11112, 00010);
     }
 
     if (msg == "rf3-0") {
-       mySwitch.switchOn("11113", "00010");
+       mySwitch.switchOn(11113, 00010);
     }
 
     if (msg == "rf3-1") {
-       mySwitch.switchOn("11113", "00010");
+       mySwitch.switchOn(11113, 00010);
     }
 
 }
